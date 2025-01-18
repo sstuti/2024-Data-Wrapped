@@ -1,11 +1,251 @@
----
-title: "Data_Wrapped"
----
-
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+```{r}
+revenues_24 <- read.csv("revenues_2024.csv")
+revenues_04 <- read.csv("revenues_2004.csv")
+```
 
 ```{r}
-1 + 1
+print(revenues_24)
+```
+```{r}
+print(revenues_04)
+```
+
+```{r}
+#| warning: false
+library(dplyr)
+
+revenues_24 <- revenues_24 |>
+  select(-X)
+
+revenues_04 <- revenues_04 |>
+  select(-X)
+
+names(revenues_24)[3] <- "Revenue_million"
+names(revenues_04)[3] <- "Revenue_million"
+
+```
+
+```{r}
+grouped_industry_revenues_24 <- revenues_24 |> 
+  group_by(Industry) |>
+  summarise(Revenue = sum(Revenue_million)) |>
+  arrange(desc(Revenue))
+
+grouped_industry_revenues_04 <- revenues_04 |> 
+  group_by(Industry) |>
+  summarise(Revenue = sum(Revenue_million)) |>
+  arrange(desc(Revenue))
+  
+```
+
+```{r}
+grouped_industry_revenues_24
+grouped_industry_revenues_04
+```
+
+```{r}
+unique(revenues_24$Headquarters)
+```
+
+```{r}
+unique(revenues_04$Headquarters)
+```
+
+
+```{r}
+revenues_24$Region <- ifelse(revenues_24$Headquarters %in% c("United States"), "United States",
+                      ifelse(revenues_24$Headquarters %in% c("Switzerland", "Germany", "United Kingdom", "France", "Netherlands", "Italy"), "Europe",
+                      ifelse(revenues_24$Headquarters %in% c("China"), "China",
+                      ifelse(revenues_24$Headquarters %in% c("Japan"), "Japan",
+                      ifelse(revenues_24$Headquarters %in% c("Saudi Arabia"), "Saudi Arabia",
+                      ifelse(revenues_24$Headquarters %in% c("India"), "India",
+                      ifelse(revenues_24$Headquarters %in% c("Singapore", "South Korea", "Taiwan"), "Rest of Asia", NA)))))))
+
+
+revenues_04$Region <- ifelse(revenues_04$Headquarters %in% c("United States"), "United States",
+                      ifelse(revenues_04$Headquarters %in% c("Switzerland", "Germany", "United Kingdom", "France", "Netherlands", "Italy", "Belgium"), "Europe",
+                      ifelse(revenues_04$Headquarters %in% c("China"), "China",
+                      ifelse(revenues_04$Headquarters %in% c("Japan"), "Japan", NA))))
+```
+
+```{r}
+grouped_region_revenues_24 <- revenues_24 |> 
+  group_by(Region) |>
+  summarise(Revenue = sum(Revenue_million)) |>
+  arrange(desc(Revenue))
+
+grouped_region_revenues_04 <- revenues_04 |> 
+  group_by(Region) |>
+  summarise(Revenue = sum(Revenue_million)) |>
+  arrange(desc(Revenue))
+```
+
+```{r}
+grouped_region_revenues_24
+grouped_region_revenues_04
+```
+
+```{r}
+library(ggplot2)
+library(forcats)
+
+industry_plot_24 <- ggplot(grouped_industry_revenues_24, aes(x = Revenue, y = fct_reorder(Industry, Revenue, .desc = FALSE))) +
+    geom_col(fill = "#0047AB") +
+    geom_text(aes(label = paste0("$", ifelse(Revenue >= 1e6, paste0(round(Revenue / 1e6, 1), "T"),
+               ifelse(Revenue >= 1e4, paste0(round(Revenue / 1e3, 1), "B"),
+                      Revenue)))), hjust = -0.1, size = 3.8, fontface = "bold") +
+    scale_x_continuous(expand = expansion(mult = c(0, 0.1))) +
+    labs(title = "Industry Revenues in 2024", x = NULL, y = NULL) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.text.y = element_text(size = 12, family = "Arial", color = "black", margin = margin(r=35), face = "bold"),
+      panel.grid = element_blank(),
+      panel.background = element_rect(fill = "white", color = NA),
+      plot.background = element_rect(fill = "white", color = NA)
+  )  
+
+industry_plot_24
+```
+
+```{r}
+industry_plot_04 <- ggplot(grouped_industry_revenues_04, aes(x = Revenue, y = fct_reorder(Industry, Revenue, .desc = FALSE))) +
+  geom_col(fill = "#008080") +
+  geom_text(aes(label = paste0("$", ifelse(Revenue >= 1e6, paste0(round(Revenue / 1e6, 1), "T"),
+             ifelse(Revenue >= 1e4, paste0(round(Revenue / 1e3, 1), "B"),
+                    Revenue)))), hjust = -0.1, size = 3.8, fontface = "bold") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.1))) +
+  labs(title = "Industry Revenues in 2004", x = NULL, y = NULL) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.y = element_text(size = 12, family = "Arial", color = "black", margin = margin(r=35), face = "bold"),
+    panel.grid = element_blank(),
+    panel.background = element_rect(fill = "white", color = NA),
+    plot.background = element_rect(fill = "white", color = NA)
+  ) 
+
+industry_plot_04
+```
+
+```{r}
+grouped_region_revenues_24$Region <- factor(
+  grouped_region_revenues_24$Region,
+  levels = c("United States", "China", "Europe", "Saudi Arabia", "Japan", "India", "Rest of Asia")
+)
+
+region_plot_24 <- ggplot(grouped_region_revenues_24, aes(x = Revenue, y = Region)) +
+  geom_col(fill = "#AB3900") +
+  geom_text(aes(label = paste0("$", ifelse(Revenue >= 1e6, paste0(round(Revenue / 1e6, 1), "T"),
+             ifelse(Revenue >= 1e4, paste0(round(Revenue / 1e3, 1), "B"),
+                    Revenue)))), hjust = -0.1, size = 3.8, fontface = "bold") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.1))) +
+  scale_y_discrete(limits = rev(levels(grouped_region_revenues_24$Region))) +
+  labs(title = "Region-Wise Revenues in 2024", x = NULL, y = NULL) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.y = element_text(size = 12, family = "Arial", color = "black", margin = margin(r=35), face = "bold"),
+    panel.grid = element_blank(),
+    panel.background = element_rect(fill = "white", color = NA),
+    plot.background = element_rect(fill = "white", color = NA)
+  )
+
+region_plot_24
+```
+```{r}
+region_plot_04 <- ggplot(grouped_region_revenues_04, aes(x = Revenue, y = fct_reorder(Region, Revenue, .desc = FALSE))) +
+  geom_col(fill = "#4C0481", width = 0.9) +
+  geom_text(aes(label = paste0("$", ifelse(Revenue >= 1e6, paste0(round(Revenue / 1e6, 1), "T"),
+             ifelse(Revenue >= 1e4, paste0(round(Revenue / 1e3, 1), "B"),
+                    Revenue)))), hjust = -0.1, size = 3.8, fontface = "bold") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.1))) +
+  scale_y_discrete(expand = c(0.8, 0)) +
+  labs(title = "Region-Wise Revenues in 2004", x = NULL, y = NULL) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.y = element_text(size = 12, family = "Arial", color = "black", margin = margin(r=35), face = "bold"),
+    panel.grid = element_blank(),
+    panel.background = element_rect(fill = "white", color = NA),
+    plot.background = element_rect(fill = "white", color = NA)
+  )
+
+region_plot_04
+```
+```{r}
+library(treemap)
+
+industry_revenue <- aggregate(Revenue_million ~ Industry, data = revenues_24, sum)
+industry_revenue <- industry_revenue[order(-industry_revenue$Revenue_million), ]
+industry_revenue$Order <- seq_len(nrow(industry_revenue))
+
+data <- merge(revenues_24, industry_revenue, by = "Industry")
+data <- data[order(data$Order), ]
+data$Industry <- gsub(" ", "\u00A0", toupper(data$Industry))
+
+custom_colors <- c("#6D8196", "#943F02", "#1657CB", "#00915D", "#003785", "#FFA51F", "#B87947", "#AA7955", "#9C7A63")
+
+industry_colors <- setNames(custom_colors, unique(data$Industry))
+
+data$Industry_Color <- industry_colors[data$Industry]
+
+treemap(
+  data,
+  index = c("Industry", "Company_Name"),
+  vSize = "Revenue_million.x",        
+  vColor = "Industry_Color",           
+  type = "categorical",                 
+  title = "Treemap of Industry Sectors by Cumulative Revenue",
+  palette = custom_colors,
+  fontsize.labels = c(9.5, 8),
+  align.labels = list(c("left", "top"), c("center", "center")),
+  fontcolor.labels = c("white", "white"),
+  bg.labels = 0,
+  force.print.labels = TRUE,
+  border.lwds = 0.7
+)
+```
+```{r}
+data
+```
+
+```{r}
+ggsave(
+  filename = "industry_revenues_2024.png",
+  plot = industry_plot_24,                          
+  width = 10,                              
+  height = 6,                              
+  dpi = 300                                
+)
+
+ggsave(
+  filename = "industry_revenues_2004.png",
+  plot = industry_plot_04,                          
+  width = 10,                              
+  height = 6,                              
+  dpi = 300                                
+)
+```
+
+```{r}
+ggsave(
+  filename = "region_revenues_2024.png",
+  plot = region_plot_24,                          
+  width = 10,                              
+  height = 6,                              
+  dpi = 300                                
+)
+
+ggsave(
+  filename = "region_revenues_2004.png",
+  plot = region_plot_04,                          
+  width = 10,                              
+  height = 6,                              
+  dpi = 300                                
+)
 ```
