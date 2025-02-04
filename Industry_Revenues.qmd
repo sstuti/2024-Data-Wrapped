@@ -177,7 +177,11 @@ region_plot_04 <- ggplot(grouped_region_revenues_04, aes(x = Revenue, y = fct_re
 
 region_plot_04
 ```
+
 ```{r}
+custom_colors <- c("#B87947", "#9188b8", "#6D8196", "#00915D", "#003785", "#FFA51F", "#1657CB", "#AA7955", "#7899a9")
+# Consumer Discretionary, Consumer Staples, Energy, Financials, Healthcare, Industrials, IT, Materials, Utilities
+
 library(treemap)
 
 industry_revenue <- aggregate(Revenue_million ~ Industry, data = revenues_24, sum)
@@ -188,20 +192,82 @@ data <- merge(revenues_24, industry_revenue, by = "Industry")
 data <- data[order(data$Order), ]
 data$Industry <- gsub(" ", "\u00A0", toupper(data$Industry))
 
-custom_colors <- c("#6D8196", "#943F02", "#1657CB", "#00915D", "#003785", "#FFA51F", "#B87947", "#AA7955", "#9C7A63")
+unique_industries <- unique(data$Industry[order(-data$Revenue_million.x)])
 
-industry_colors <- setNames(custom_colors, unique(data$Industry))
+num_industries <- length(unique_industries)
+custom_colors <- custom_colors[1:num_industries]
 
+industry_colors <- setNames(custom_colors, unique_industries)
 data$Industry_Color <- industry_colors[data$Industry]
 
-treemap(
+revenue_plot <- treemap(
   data,
   index = c("Industry", "Company_Name"),
   vSize = "Revenue_million.x",        
-  vColor = "Industry_Color",           
-  type = "categorical",                 
-  title = "Treemap of Industry Sectors by Cumulative Revenue",
-  palette = custom_colors,
+  vColor = "Industry",
+  type = "index",
+  title = "Industry Revenue Treemap of Fortune Top 50 Companies 2024",
+  palette = industry_colors,
+  fontsize.labels = c(9.5, 8),
+  align.labels = list(c("left", "top"), c("center", "center")),
+  fontcolor.labels = c("white", "white"),
+  bg.labels = 0,
+  force.print.labels = TRUE,
+  border.lwds = 0.7
+)
+
+```
+```{r}
+market_cap_24 <- read.csv("market_cap_2024.csv")
+```
+
+```{r}
+market_cap_24 <- market_cap_24 |>
+  select(-X)
+
+names(market_cap_24)[3] <- "Market_Cap_million"
+
+market_cap_24$Market_Cap_million <- as.numeric(market_cap_24$Market_Cap_million)
+market_cap_24 <- market_cap_24 |>
+  mutate(Industry = ifelse(Industry == "Consumer Discretionary", "Consumer Disc", Industry))
+
+market_cap_24
+```
+
+```{r}
+custom_colors <- c("#B87947", "#9188b8", "#6D8196", "#00915D", "#003785", "#FFA51F", "#1657CB", "#AA7955", "#7899a9")
+# Consumer Discretionary, Consumer Staples, Energy, Financials, Healthcare, Industrials, IT, Materials, Utilities
+
+industry_market_cap <- aggregate(Market_Cap_million ~ Industry, data = market_cap_24, sum)
+industry_market_cap <- industry_market_cap[order(-industry_market_cap$Market_Cap_million), ]
+industry_market_cap$Order <- seq_len(nrow(industry_market_cap))
+
+data <- merge(market_cap_24, industry_market_cap, by = "Industry")
+data <- data[order(data$Order), ]
+data$Industry <- gsub(" ", "\u00A0", toupper(data$Industry))
+
+unique_industries <- unique(data$Industry[order(-data$Market_Cap_million.x)])
+
+unique_industries
+```
+
+```{r}
+data$Company_Name[data$Market_Cap_million.x < 80000] <- ""
+
+num_industries <- length(unique_industries)
+custom_colors <- custom_colors[1:num_industries]
+
+industry_colors <- setNames(custom_colors, unique_industries)
+data$Industry_Color <- industry_colors[data$Industry]
+
+market_plot <- treemap(
+  data,
+  index = c("Industry", "Company_Name"),
+  vSize = "Market_Cap_million.x",        
+  vColor = "Industry",
+  type = "index",
+  title = "Market Cap Treemap of Fortune Top 50 Companies 2024",
+  palette = industry_colors,
   fontsize.labels = c(9.5, 8),
   align.labels = list(c("left", "top"), c("center", "center")),
   fontcolor.labels = c("white", "white"),
@@ -212,7 +278,9 @@ treemap(
 ```
 ```{r}
 data
+
 ```
+
 
 ```{r}
 ggsave(
