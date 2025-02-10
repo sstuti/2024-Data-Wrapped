@@ -276,10 +276,7 @@ market_plot <- treemap(
   border.lwds = 0.7
 )
 ```
-```{r}
-data
 
-```
 
 
 ```{r}

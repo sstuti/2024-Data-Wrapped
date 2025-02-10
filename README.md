@@ -15,7 +15,7 @@ I will constantly be updating this section as I develop new visualizations.
 
 ### 2024 vs 2004: Industry-Wise Revenue for the Fortune Top 50 Companies
 
-![](images/Sstuti%20D%20Mehra.png){width="294"}
+<img src="images/industry_revenue.png" width="350"/>
 
 Top 5 companies by revenue 2024: Walmart, Amazon, State Grid Corp. of China, Saudi Aramco, China Petrochemical Corp.\
 Top 5 companies by revenue 2004: Walmart, BP p.l.c., ExxonMobil, Shell, General Motors\
@@ -29,7 +29,7 @@ Observations from the graph:\
 
 ### 2024 vs 2004: Region-Wise Revenue for the Fortune Top 50 Companies
 
-![](images/Sstuti D Mehra (2).jpg){width="315"}
+<img src="images/region_revenue.jpg" width="350"/>
 
 • 20 years ago, Europe and the US were nearly equal in revenue among the Top 50 companies in the Fortune list, with Japan at the third spot\
 \
@@ -41,7 +41,7 @@ Observations from the graph:\
 
 ### Hierarchical Treemaps on Revenues vs Market Capitalization for the Fortune Top 50 Companies
 
-![](images/Sstuti D Mehra (1).png){width="301"}
+<img src="images/revenue_treemap.png" width="350"/>
 
 Market capitalization (valuation) reflects the investors’ confidence in the growth potential, and investors put their money where they anticipate maximum growth\
 \
